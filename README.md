@@ -155,12 +155,6 @@ At loads under 20Ohms, the current limit will not do all that it could for other
 
 ### Assembling:
 
-<p float="left">
-  <img src="Images/20230104_203020.jpg" width="100" /> >*one two three*
-  <img src="Images/20230104_203020.jpg" width="100" /> >*one two three*
-  <img src="Images/20230104_203020.jpg" width="100" /> >*one two three*
-</p>
-
 |![](Images/20230104_203020.jpg)|![](Images/20230104_203300.jpg)|
 |:---:|:---:|
 |*Main circuit with comparators, gain amplifiers, transistor OR gate, a voltage reference, voltage dividers, and digital potentiometer.*|*Buck converter circuit with LM2576T-ADJ regulator; shunt resistor*|
