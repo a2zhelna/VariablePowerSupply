@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "LM2576T-ADJ")(type "KiCad")(uri "${KIPRJMOD}/footprints")(options "")(descr ""))
+  (lib (name "MCP4251-503E-P")(type "KiCad")(uri "${KIPRJMOD}/footprints")(options "")(descr ""))
+)

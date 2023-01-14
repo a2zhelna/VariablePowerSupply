@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "LM2576T-ADJ")(type "Legacy")(uri "${KIPRJMOD}/symbols/LM2576T-ADJ.lib")(options "")(descr ""))
+  (lib (name "MCP4251-503E-P")(type "Legacy")(uri "${KIPRJMOD}/symbols/MCP4251-503E-P.lib")(options "")(descr ""))
+)
