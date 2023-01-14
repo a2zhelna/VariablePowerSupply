@@ -4,19 +4,13 @@ I want to build a power supply, similar to a lab bench one, with fairly elementa
 
 Major components/systems:
 
-Variable voltage regulator,
-
-Digital potentiometer so that user can control reference voltage values of the device,
-
+- Variable voltage regulator,
+- Digital potentiometer so that user can control reference voltage values of the device,
 Power supply,
-
-Current limiting circuit (with a variable current),
-
-ADC to read the output voltage and current (whether it reads the actual output, or gets the voltage value from the state of the adjustment/control element of the variable regulator: potentiometer, etc.), so that it can be displayed,
-
-Use a shunt for reading current: simple, circuit doesn’t require very specific supply voltages like for some Hall-effect sensors; can produce significant burden voltage,
-
-LCD display.
+- Current limiting circuit (with a variable current),
+- ADC to read the output voltage and current (whether it reads the actual output, or gets the voltage value from the state of the adjustment/control element of the variable regulator: potentiometer, etc.), so that it can be displayed,
+- Use a shunt for reading current: simple, circuit doesn’t require very specific supply voltages like for some Hall-effect sensors; can produce significant burden voltage,
+- LCD display.
 
 ## Setting voltage and current limits
 
@@ -36,30 +30,37 @@ Incremental rotary encoder:
 
 ### Interfacing with digital pot:
 
-I will be using the ****MCP4251-503E/P**** 50k Ohm ********digital pot chip ([datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/22060b.pdf)), which has 256 taps (amount of wiper placements; resolution is ~188 Ohms), in order to adjust the feedback circuit of the regulator, and consequently, the output voltage value.
+I will be using the **MCP4251-503E/P** 50k Ohm digital pot chip ([datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/22060b.pdf)), which has 256 taps (amount of wiper placements; resolution is ~188 Ohms), in order to adjust the feedback circuit of the regulator, and consequently, the output voltage value.
+
 HOW TO INTERFACE WITH SPI:
+
 We can either write **8-bit serial commands to increment or decrement** the wiper, or we can write **16-bit serial commands to read or write** to the wiper. 
 
 Both command types start with a “Command Byte”:
 
-First four bits (address bits) are the memory location of the wiper you are configuring 
-0000 : Volatile Wiper 0
-0001 : Volatile Wiper 1
+>First four bits (address bits) are the memory location of the wiper you are configuring 
 
-Next two bits are the command bits, specifying what exact action is being done
-11 : Read data (get volatile wiper configuration data)
-00 : Write data (set the value of the wiper “position”)
-01 : Increment wiper data (+1)
-10 : Decrement wiper data (-1)
+>>0000 : Volatile Wiper 0
 
-Last two bits of the command byte are D9 & D8, respectively, where only D8 is defined, for the **write** command
-It represents the MSB of the 9-bit data you write to the pot.
+>>0001 : Volatile Wiper 1
 
-As bit D9 (the seventh command byte’s bit) is sent by the master, the pot sends (on the SDO pin) the CMDERR bit state. If the four address bits received and the two command bits received are a valid combination, it will be high, and if invalid it will be low.
+>Next two bits are the command bits, specifying what exact action is being done
+
+>>11 : Read data (get volatile wiper configuration data)
+
+>>00 : Write data (set the value of the wiper “position”)
+
+>>01 : Increment wiper data (+1)
+
+>>10 : Decrement wiper data (-1)
+
+>Last two bits of the command byte are D9 & D8, respectively, where only D8 is defined for the **write** command. It represents the MSB of the 9-bit data you write to the pot.
+
+>As bit D9 (the seventh command byte’s bit) is sent by the master, the pot sends (on the SDO pin) the CMDERR bit state. If the four address bits received and the two command bits received are a valid combination, it will be high, and if invalid it will be low.
 
 The 16-bit command type has an additional “Data Byte”:
 
-Where the 8 bits (MSB being the first bit) combine with D8 to make the wiper setting data.
+>Where the 8 bits (MSB being the first bit) combine with D8 to make the wiper setting data.
 
 ---
 
@@ -67,32 +68,32 @@ Where the 8 bits (MSB being the first bit) combine with D8 to make the wiper set
 
 The LM2576T-ADJ regulator I am using, “looks” at the voltage at its feedback pin.
 
-![Here’s a very abstract view of the internals of this regulator](Images/Untitled%201.png)
+<img src="Images/Untitled%201.png" alt="drawing" width="500"/>
 
-Here’s a very abstract view of the internals of this regulator
+>*Here’s a very abstract view of the internals of this regulator*
 
 If the voltage is higher than 1.23V, it decreases the pwm duty cycle signal in its voltage converter circuit, which decreases the amount of energy in the inductor, and thus decreases the output voltage “in hopes” of decreasing the voltage at the feedback pin. If the feeback voltage is lower than 1.23V, vice versa.
 
-![How a standard custom-voltage output configuration looks](Images/Untitled%202.png)
+<img src="Images/Untitled%202.png" alt="drawing" width="500"/>
 
-How a standard custom-voltage output configuration looks
+>*How a standard custom-voltage output configuration looks*
 
 For controlling the regulator based off of the current it sources, there’s a hacky solution to simply measure the current, and check if it exceeds some threshold value with a comparator who’s output is connected to the regulator’s feedback pin. If so, the comparator goes high which causes the output voltage, and thus current, to decrease (all because the high comparator state is higher than 1.23V). If current is lower than the threshold value, the feedback pin sees 0V, which causes the regulator to increase its output voltage.
 
-![Using a shunt and differential gain amplifier to measure current and inputting the output to a comparator to check whether the current is higher or lower than some threshold/reference value ](Images/Untitled%203.png)
+<img src="Images/Untitled%203.png" alt="drawing" width="500"/>
 
-Using a shunt and differential gain amplifier to measure current and inputting the output to a comparator to check whether the current is higher or lower than some threshold/reference value 
+>*Using a shunt and differential gain amplifier to measure current and inputting the output to a comparator to check whether the current is higher or lower than some threshold/reference value*
 
 NEXT, because the two feedback signals that I’ve mentioned (for controlling voltage and controlling current) are quite different (one is analog and the other is digital), it’s harder to think about integrating them together. So, I can use a somewhat redundant comparator with 1.23V at the inverting pin which checks whether the voltage in the voltage divider is higher/lower than 1.23V, and then BOOM! I have a digital feedback signal for both voltage and current. 
 
-![Untitled](Images/Untitled%204.png)
+<img src="Images/Untitled%204.png" alt="drawing" width="700"/>
 
 Then I can put those signals into an OR gate (made with transistors), and connect the output to the feedback pin. It is high when voltage/current is too high, and low when voltage/current is too low.
 
 We now have a new 1.23V voltage reference we want to reach, if we are higher than it then tell the regulator to decrease output, if lower tell it to increase. The fact that the feedback is digital makes it so we can force the regulator to achieve any condition we desire. 
 Furthermore, I noticed that the regulator’s minimum output when powered by 15V is actually 0.3V (by feeding a steady 3V3 to the feedback pin). In a future design, I can feed 0.3V into the non-inverting input of the comparator which outputs to the feedback pin, making the powersupply able to control its output to be within 0.3V-1.23V as well.
 
-**More About** **Controlling Voltage Output:**
+**More About Controlling Voltage Output:**
 
 I initially built an example circuit from the datasheet for the adjustable regulator. The feedback configuration shown in that datasheet example (figure 7-4) is specifically made for having a high output voltage (50k + 1.21k). 
 
@@ -100,7 +101,9 @@ I initially built an example circuit from the datasheet for the adjustable regul
 
 I’ve chosen to use a 200uF capacitor instead of a 2000uF one to have the output reach the desired voltage quicker (by compromising low ripple). Also, since I found a good 15V power supply, my maximum will be just a little lower than that. By looking at my options and common resistor values that satisfy that constraint while maintaining some accuracy, I’ve chosen a max output voltage of ~12.16. Here is my voltage feedback circuit:
 
-![In this circuit, the maximum output voltage which lends 1.23V at the wiper is 12.16V. ](Images/Untitled%206.png)
+<img src="Images/Untitled%206.png" alt="drawing" width="700"/>
+
+>*In this circuit, the maximum output voltage which lends 1.23V at the wiper is 12.16V.*
 
 In this circuit, the maximum output voltage which lends 1.23V at the wiper is 12.16V. 
 
@@ -130,6 +133,7 @@ I.E., if you connect a 1 Ohm load at the output of the PS, the lowest output vol
 So a somewhat user-friendly summary about this device’s limits is:
 
 The voltage limit can be set to values from 1.23V to 11.83V.
+
 The current limit can be set to values from 0A to 3A, and can limit the output voltage to as low as 0.3V.
 
 At loads above 100 Ohms, the limits work exactly as specified
@@ -151,33 +155,21 @@ At loads under 20Ohms, the current limit will not do all that it could for other
 
 ### Assembling:
 
-![Main circuit with comparators, gain amplifiers, transistor OR gate, a voltage reference, voltage dividers, and digital potentiometer.](Images/20230104_203020.jpg)
+<p float="left">
+  <img src="Images/20230104_203020.jpg" width="100" /> >*one two three*
+  <img src="Images/20230104_203020.jpg" width="100" /> >*one two three*
+  <img src="Images/20230104_203020.jpg" width="100" /> >*one two three*
+</p>
 
-Main circuit with comparators, gain amplifiers, transistor OR gate, a voltage reference, voltage dividers, and digital potentiometer.
-
-![Buck converter circuit with LM2576T-ADJ regulator; shunt resistor](Images/20230104_203300.jpg)
-
-Buck converter circuit with LM2576T-ADJ regulator; shunt resistor
-
-![Rotary encoders with debouncing circuits](Images/20230104_202829.jpg)
-
-Rotary encoders with debouncing circuits
-
-![DC-DC switching regulator for powering the arduino](Images/20230105_123747.jpg)
-
-DC-DC switching regulator for powering the arduino
-
-![15V power supply (**TXLN 035-23M3)** for powering the regulator](Images/20230105_115155.jpg)
-
-15V power supply (**TXLN 035-23M3)** for powering the regulator
-
-![16-bit ADC (communicates via I2C)](Images/20230104_203045.jpg)
-
-16-bit ADC (communicates via I2C)
-
-![LCD display (communicates via SPI)](Images/20230105_141312.jpg)
-
-LCD display (communicates via SPI)
+|![](Images/20230104_203020.jpg)|![](Images/20230104_203300.jpg)|
+|:---:|:---:|
+|*Main circuit with comparators, gain amplifiers, transistor OR gate, a voltage reference, voltage dividers, and digital potentiometer.*|*Buck converter circuit with LM2576T-ADJ regulator; shunt resistor*|
+|![](Images/20230104_202829.jpg)|![](Images/20230105_123747.jpg)|
+|*Rotary encoders with debouncing circuits*|*DC-DC switching regulator for powering the arduino*|
+|![](Images/20230105_115155.jpg)|![](Images/20230104_203045.jpg)|
+|*15V power supply (**TXLN 035-23M3)** for powering the regulator*|*16-bit ADC (communicates via I2C)*|
+|![](Images/20230105_141312.jpg)|
+|*LCD display (communicates via SPI)*|
 
 ![20230105_233304.jpg](Images/20230105_233304.jpg)
 
