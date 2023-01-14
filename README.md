@@ -151,6 +151,8 @@ At loads under 20Ohms, the current limit will not do all that it could for other
 - Thus, the user must make sure that attaching 0.3V to their load will not cause excessive current to be drawn.
 - The LM2576T-ADJ voltage regulator that I’m using has overcurrent protection in the case of a short-circuit, making sure that a current of 3A is never exceeded.
 
+Demo Video: https://www.dropbox.com/s/umqs7sh1yjw7067/PowerSupplyDemo.mp4?dl=0
+
 ---
 
 ### Assembling:
