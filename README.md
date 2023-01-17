@@ -1,6 +1,6 @@
 # Variable Power-Supply Notes
 
-The aim of this project is to build a power supply, similar to a standard lab bench one. I will use fairly elementary components in order to learn about the intricacies of the subsystens responsible for the functionality, which I have been taking for granted, of a variable power supply. The major component of this build is the LM2576T-ADJ switching regulator, which has a neat MOSFET switching mechanism built into it for supplying energy to the buck converter circuit. I have decided not to create this adjustable PWM mechanism on my own as I would never be able to come close to the precision and responsiveness of this IC. Everything else, I attempt to build relatively from the ground up.
+The aim of this project is to build a power supply, similar to a standard lab bench one. I will use fairly elementary components in order to learn about the intricacies of the subsystems responsible for the functionality, which I have been taking for granted, of a variable power supply. The major component of this build is the LM2576T-ADJ switching regulator, which has a neat MOSFET switching mechanism built into it for supplying energy to the buck converter circuit. I have decided not to create this adjustable PWM mechanism on my own as I would never be able to come close to the precision and responsiveness of this IC. Everything else, I attempt to build relatively from the ground up.
 
 Major components/systems:
 
