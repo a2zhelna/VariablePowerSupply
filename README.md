@@ -6,7 +6,7 @@ Major components/systems:
 
 - Variable voltage regulator,
 - Digital potentiometer so that user can control reference voltage values of the device,
-Power supply,
+- Power supply,
 - Current limiting circuit (with a variable current),
 - ADC to read the output voltage and current (whether it reads the actual output, or gets the voltage value from the state of the adjustment/control element of the variable regulator: potentiometer, etc.), so that it can be displayed,
 - Use a shunt for reading current: simple, circuit doesn’t require very specific supply voltages like for some Hall-effect sensors; can produce significant burden voltage,
